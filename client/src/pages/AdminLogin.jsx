@@ -12,8 +12,7 @@ export default function AdminLogin() {
   }, []);
 
   const handleLogin = () => {
-    const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-    window.location.href = `${baseURL}/api/auth/google`;
+    window.location.href = window.location.origin + "/api/auth/google";
   };
 
   return (
