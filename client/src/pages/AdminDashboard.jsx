@@ -229,6 +229,10 @@ export default function AdminDashboard() {
           </table>
         </div>
       </main>
+
+      <footer style={{ textAlign: "center", padding: "24px", color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "20px" }}>
+        NayePankh Foundation © 2024 — Volunteer Management System
+      </footer>
     </div>
   );
 }

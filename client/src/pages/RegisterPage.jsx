@@ -149,6 +149,9 @@ export default function RegisterPage() {
           <div className="card-header">
             <div className="card-header-icon" aria-hidden="true">🤝</div>
             <h1 className="card-title">Volunteer Registration</h1>
+            <p className="card-subtitle" style={{ marginBottom: "12px", fontWeight: "500" }}>
+              Join our mission — Giving Wings to Dreams 🌱
+            </p>
             <p className="card-subtitle">
               Join NayePankh Foundation and help us make a difference in lives across India.
             </p>
