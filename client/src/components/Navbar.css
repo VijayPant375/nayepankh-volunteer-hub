@@ -15,11 +15,33 @@
   height: 68px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .navbar-brand {
   display: flex;
   align-items: center;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+}
+
+.admin-link {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--green-primary);
+  text-decoration: none;
+  padding: 8px 16px;
+  border: 1.5px solid var(--green-primary);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.admin-link:hover {
+  background: var(--green-primary);
+  color: var(--white);
 }
 
 .brand-logo {
