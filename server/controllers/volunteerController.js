@@ -1,0 +1,144 @@
+const { stringify } = require("csv-stringify");
+const Volunteer = require("../models/Volunteer");
+
+// ── POST / — Register a new volunteer (public) ────────────────────────────────
+const registerVolunteer = async (req, res) => {
+  try {
+    const { name, email, phone, skills, areaOfInterest, availability } =
+      req.body;
+
+    // Validate all required fields are present
+    if (!name || !email || !phone || !skills || !areaOfInterest || !availability) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check for duplicate email
+    const existing = await Volunteer.findOne({ email: email.toLowerCase().trim() });
+    if (existing) {
+      return res.status(409).json({ message: "Email already registered" });
+    }
+
+    const volunteer = await Volunteer.create({
+      name,
+      email,
+      phone,
+      skills,
+      areaOfInterest,
+      availability,
+    });
+
+    return res.status(201).json({ message: "Registered successfully", volunteer });
+  } catch (error) {
+    console.error("registerVolunteer error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ── GET / — Get all volunteers with optional filters (protected) ──────────────
+const getAllVolunteers = async (req, res) => {
+  try {
+    const { status, areaOfInterest, search } = req.query;
+    const query = {};
+
+    if (status) {
+      query.status = status;
+    }
+
+    if (areaOfInterest) {
+      query.areaOfInterest = areaOfInterest;
+    }
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const volunteers = await Volunteer.find(query).sort({ registeredAt: -1 });
+    const total = volunteers.length;
+
+    return res.status(200).json({ volunteers, total });
+  } catch (error) {
+    console.error("getAllVolunteers error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ── PATCH /:id/status — Update volunteer status (protected) ───────────────────
+const updateVolunteerStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ["pending", "approved", "rejected"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
+    const volunteer = await Volunteer.findById(id);
+    if (!volunteer) {
+      return res.status(404).json({ message: "Volunteer not found" });
+    }
+
+    volunteer.status = status;
+    await volunteer.save();
+
+    return res.status(200).json({ message: "Status updated", volunteer });
+  } catch (error) {
+    console.error("updateVolunteerStatus error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ── GET /export — Export all volunteers as CSV (protected) ────────────────────
+const exportCSV = async (req, res) => {
+  try {
+    const volunteers = await Volunteer.find({}).sort({ registeredAt: -1 });
+
+    const rows = volunteers.map((v) => [
+      v.name,
+      v.email,
+      v.phone,
+      Array.isArray(v.skills) ? v.skills.join(", ") : v.skills,
+      v.areaOfInterest,
+      v.availability,
+      v.status,
+      v.registeredAt ? new Date(v.registeredAt).toISOString() : "",
+    ]);
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="volunteers.csv"'
+    );
+
+    const stringifier = stringify({
+      header: true,
+      columns: [
+        "Name",
+        "Email",
+        "Phone",
+        "Skills",
+        "Area of Interest",
+        "Availability",
+        "Status",
+        "Registered At",
+      ],
+    });
+
+    stringifier.pipe(res);
+    rows.forEach((row) => stringifier.write(row));
+    stringifier.end();
+  } catch (error) {
+    console.error("exportCSV error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = {
+  registerVolunteer,
+  getAllVolunteers,
+  updateVolunteerStatus,
+  exportCSV,
+};
