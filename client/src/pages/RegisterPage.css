@@ -1,0 +1,425 @@
+/* ── Page Layout ──────────────────────────────────────────────────────────── */
+.register-page {
+  min-height: calc(100vh - 68px);
+  background: var(--green-bg);
+  padding: 40px 16px 60px;
+}
+
+.form-wrapper {
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+/* ── Banners ──────────────────────────────────────────────────────────────── */
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  animation: slideDown 0.3s ease;
+  line-height: 1.5;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.banner--success {
+  background: #e8f5e9;
+  border: 1.5px solid #a5d6a7;
+  color: #1b5e20;
+}
+
+.banner--error {
+  background: var(--error-bg);
+  border: 1.5px solid #ef9a9a;
+  color: var(--error);
+}
+
+.banner-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+.form-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+/* ── Card Header ─────────────────────────────────────────────────────────── */
+.card-header {
+  background: linear-gradient(135deg, #2e7d32 0%, #388e3c 60%, #43a047 100%);
+  padding: 36px 32px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.card-header-icon {
+  font-size: 2.4rem;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.card-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.4px;
+  margin-bottom: 8px;
+}
+
+.card-subtitle {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* ── Form Body ────────────────────────────────────────────────────────────── */
+.form-body {
+  padding: 32px;
+}
+
+/* ── Form Group ───────────────────────────────────────────────────────────── */
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  letter-spacing: 0.1px;
+}
+
+.form-label-hint {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.required-star {
+  color: var(--error);
+  margin-left: 2px;
+}
+
+/* ── Inputs ───────────────────────────────────────────────────────────────── */
+.form-input {
+  width: 100%;
+  padding: 11px 14px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+  appearance: none;
+}
+
+.form-input::placeholder {
+  color: #bdbdbd;
+}
+
+.form-input:focus {
+  border-color: var(--green-primary);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+
+.form-input--error {
+  border-color: var(--error) !important;
+  box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.1) !important;
+}
+
+/* ── Select ───────────────────────────────────────────────────────────────── */
+.select-wrapper {
+  position: relative;
+}
+
+.form-select {
+  width: 100%;
+  padding: 11px 40px 11px 14px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.form-select:focus {
+  border-color: var(--green-primary);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+
+.form-select option[value=""] {
+  color: #bdbdbd;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+  font-size: 0.85rem;
+}
+
+/* ── Skills Grid ──────────────────────────────────────────────────────────── */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.skills-grid--error .skill-pill {
+  border-color: #ef9a9a;
+}
+
+.skill-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--white);
+  transition: all 0.18s ease;
+  user-select: none;
+  line-height: 1.2;
+}
+
+.skill-pill:hover {
+  border-color: var(--green-accent);
+  background: var(--green-light);
+  color: var(--green-primary);
+}
+
+.skill-pill--checked {
+  border-color: var(--green-primary);
+  background: var(--green-light);
+  color: var(--green-primary);
+  font-weight: 600;
+}
+
+.skill-pill-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1.5px solid currentColor;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+  font-weight: 700;
+  transition: background 0.15s ease;
+}
+
+.skill-pill--checked .skill-pill-check {
+  background: var(--green-primary);
+  border-color: var(--green-primary);
+  color: white;
+}
+
+/* ── Radio Group ──────────────────────────────────────────────────────────── */
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.radio-group--error .radio-option {
+  border-color: #ef9a9a;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1.5px solid var(--border);
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--white);
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.radio-option:hover {
+  border-color: var(--green-accent);
+  background: var(--green-light);
+  color: var(--green-primary);
+}
+
+.radio-option--checked {
+  border-color: var(--green-primary);
+  background: var(--green-light);
+  color: var(--green-primary);
+  font-weight: 600;
+}
+
+.radio-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  position: relative;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.radio-option--checked .radio-circle::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: var(--green-primary);
+}
+
+/* ── Field Error ──────────────────────────────────────────────────────────── */
+.field-error {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--error);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.field-error::before {
+  content: "⚠";
+  font-size: 0.75rem;
+}
+
+/* ── Submit Button ────────────────────────────────────────────────────────── */
+.submit-btn {
+  width: 100%;
+  padding: 14px 24px;
+  margin-top: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--green-primary), var(--green-medium));
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 14px rgba(46, 125, 50, 0.35);
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--green-dark), var(--green-primary));
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
+}
+
+.submit-btn:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Spinner ──────────────────────────────────────────────────────────────── */
+.spinner {
+  width: 17px;
+  height: 17px;
+  border: 2.5px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Footer Text ──────────────────────────────────────────────────────────── */
+.form-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .register-page {
+    padding: 20px 12px 48px;
+  }
+
+  .card-header {
+    padding: 28px 20px 24px;
+  }
+
+  .card-title {
+    font-size: 1.35rem;
+  }
+
+  .form-body {
+    padding: 24px 20px;
+  }
+
+  .skills-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 380px) {
+  .skills-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .radio-group {
+    flex-direction: column;
+  }
+}
