@@ -28,7 +28,7 @@ export default function AdminLogin() {
 
         <div className="login-card">
           <div className="login-header">
-            <div className="login-header-icon" aria-hidden="true">🔐</div>
+            <img src="/logo.png" alt="NayePankh Foundation" className="login-header-logo" style={{ height: "64px", marginBottom: "16px" }} />
             <h1 className="login-title">Admin Access</h1>
             <p className="login-subtitle">NayePankh Foundation Volunteer Management</p>
           </div>

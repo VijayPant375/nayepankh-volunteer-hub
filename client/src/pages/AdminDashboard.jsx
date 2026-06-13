@@ -11,7 +11,10 @@ const AREAS = [
 export default function AdminDashboard() {
   const { admin, logout } = useContext(AuthContext);
   const [volunteers, setVolunteers] = useState([]);
+  const [allVolunteers, setAllVolunteers] = useState([]);
   const [total, setTotal] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState("");
   
   // Filter state
   const [statusFilter, setStatusFilter] = useState("");
@@ -19,7 +22,7 @@ export default function AdminDashboard() {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Stats (calculated client-side as requested)
+  // Stats
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
 
   // Debounce search
@@ -28,8 +31,9 @@ export default function AdminDashboard() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  // Fetch volunteers
+  // Fetch filtered volunteers for the table
   const fetchVolunteers = useCallback(async () => {
+    setIsLoading(true);
     try {
       const params = new URLSearchParams();
       if (statusFilter) params.append("status", statusFilter);
@@ -39,36 +43,51 @@ export default function AdminDashboard() {
       const res = await api.get(`/api/volunteers?${params.toString()}`);
       setVolunteers(res.data.volunteers);
       setTotal(res.data.total);
+      
+      const now = new Date();
+      setLastUpdated(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
     } catch (error) {
       console.error("Failed to fetch volunteers", error);
+    } finally {
+      setIsLoading(false);
     }
   }, [statusFilter, areaFilter, debouncedSearch]);
+
+  // Fetch ALL volunteers for global stats
+  const fetchAllVolunteers = useCallback(async () => {
+    try {
+      const res = await api.get("/api/volunteers");
+      setAllVolunteers(res.data.volunteers || []);
+    } catch (error) {
+      console.error("Failed to fetch all volunteers for stats", error);
+    }
+  }, []);
 
   useEffect(() => {
     fetchVolunteers();
   }, [fetchVolunteers]);
 
-  // Calculate stats on volunteers array change
-  // Note: Since the backend returns a filtered list, we should calculate overall stats
-  // from a separate call or just calculate from the currently fetched list.
-  // The spec says: "Calculate these from the volunteers array on the frontend, no separate API call"
-  // So stats reflect the CURRENT filtered view. If that's not intended, we'd need a separate endpoint.
-  // Given the instruction, I'll calculate from `volunteers` array.
   useEffect(() => {
-    const s = { total: volunteers.length, pending: 0, approved: 0, rejected: 0 };
-    volunteers.forEach(v => {
+    fetchAllVolunteers();
+  }, [fetchAllVolunteers]);
+
+  // Calculate stats from allVolunteers
+  useEffect(() => {
+    const s = { total: allVolunteers.length, pending: 0, approved: 0, rejected: 0 };
+    allVolunteers.forEach(v => {
       if (v.status === "pending") s.pending++;
       if (v.status === "approved") s.approved++;
       if (v.status === "rejected") s.rejected++;
     });
     setStats(s);
-  }, [volunteers]);
+  }, [allVolunteers]);
 
   // Handle status update
   const handleUpdateStatus = async (id, newStatus) => {
     try {
       await api.patch(`/api/volunteers/${id}/status`, { status: newStatus });
-      fetchVolunteers(); // refresh
+      fetchVolunteers(); // refresh table
+      fetchAllVolunteers(); // refresh stats
     } catch (error) {
       console.error("Failed to update status", error);
       alert("Failed to update status");
@@ -163,9 +182,12 @@ export default function AdminDashboard() {
               <option key={area} value={area}>{area}</option>
             ))}
           </select>
-          <button className="btn-export" onClick={handleExport}>
-            Export CSV
-          </button>
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "16px" }}>
+            {lastUpdated && <span className="last-updated">Last updated: {lastUpdated}</span>}
+            <button className="btn-export" onClick={handleExport}>
+              Export CSV
+            </button>
+          </div>
         </div>
 
         {/* VOLUNTEERS TABLE */}
@@ -185,7 +207,15 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {volunteers.length === 0 ? (
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={`skeleton-${i}`}>
+                    {Array.from({ length: 9 }).map((_, j) => (
+                      <td key={j}><div className="skeleton-cell"></div></td>
+                    ))}
+                  </tr>
+                ))
+              ) : volunteers.length === 0 ? (
                 <tr>
                   <td colSpan="9" className="no-data">No volunteers found.</td>
                 </tr>
@@ -221,6 +251,14 @@ export default function AdminDashboard() {
                       >
                         Reject
                       </button>
+                      {(v.status === "approved" || v.status === "rejected") && (
+                        <button
+                          className="btn-action btn-reset"
+                          onClick={() => handleUpdateStatus(v._id, "pending")}
+                        >
+                          Reset
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

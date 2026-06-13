@@ -136,9 +136,21 @@ const exportCSV = async (req, res) => {
   }
 };
 
+// ── GET /count — Get total volunteer count (public) ─────────────────────────
+const getVolunteerCount = async (req, res) => {
+  try {
+    const count = await Volunteer.countDocuments({});
+    return res.status(200).json({ count });
+  } catch (error) {
+    console.error("getVolunteerCount error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   registerVolunteer,
   getAllVolunteers,
   updateVolunteerStatus,
   exportCSV,
+  getVolunteerCount,
 };

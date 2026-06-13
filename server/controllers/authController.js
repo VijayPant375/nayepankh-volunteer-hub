@@ -19,7 +19,7 @@ const googleCallback = (req, res) => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: false,       // set to true in production (HTTPS)
+    secure: process.env.NODE_ENV === "production",       // set to true in production (HTTPS)
     sameSite: "lax",
     maxAge: SEVEN_DAYS_MS,
   });

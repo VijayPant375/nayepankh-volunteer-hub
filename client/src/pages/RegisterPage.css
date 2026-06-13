@@ -10,6 +10,20 @@
   margin: 0 auto;
 }
 
+.volunteer-count-badge {
+  text-align: center;
+  background: var(--green-light);
+  color: var(--green-dark);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border-radius: 50px;
+  margin: 0 auto 24px auto;
+  width: fit-content;
+  border: 1.5px solid #a5d6a7;
+  box-shadow: var(--shadow-sm);
+}
+
 /* ── Banners ──────────────────────────────────────────────────────────────── */
 .banner {
   display: flex;

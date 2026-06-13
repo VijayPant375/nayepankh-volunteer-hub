@@ -10,11 +10,7 @@ export default function Navbar() {
       <div className="navbar-inner">
         <div className="navbar-brand">
           <Link to="/" className="brand-logo">
-            <span className="brand-leaf" aria-hidden="true">🌿</span>
-            <div className="brand-text">
-              <span className="brand-name">NayePankh Foundation</span>
-              <span className="brand-tagline">Giving Wings to Dreams</span>
-            </div>
+            <img src="/logo.png" alt="NayePankh Foundation" className="brand-logo-img" />
           </Link>
         </div>
         <div className="navbar-links">

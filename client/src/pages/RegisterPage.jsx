@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../api/axios";
 import "./RegisterPage.css";
 
@@ -33,6 +33,20 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [generalError, setGeneralError] = useState("");
+  const [volunteerCount, setVolunteerCount] = useState(0);
+
+  // Fetch volunteer count
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const res = await api.get("/api/volunteers/count");
+        setVolunteerCount(res.data.count || 0);
+      } catch (err) {
+        console.error("Failed to fetch volunteer count", err);
+      }
+    };
+    fetchCount();
+  }, []);
 
   // ── Handlers ────────────────────────────────────────────────────────────────
   const handleChange = (e) => {
@@ -128,6 +142,12 @@ export default function RegisterPage() {
     <main className="register-page" id="main-content">
       <div className="form-wrapper">
 
+        {volunteerCount > 0 && (
+          <div className="volunteer-count-badge">
+            🤝 Join {volunteerCount}+ volunteers making a difference
+          </div>
+        )}
+
         {/* Success Banner */}
         {successMsg && (
           <div className="banner banner--success" role="alert" aria-live="polite">
@@ -147,7 +167,7 @@ export default function RegisterPage() {
         <div className="form-card">
           {/* Card Header */}
           <div className="card-header">
-            <div className="card-header-icon" aria-hidden="true">🤝</div>
+            <img src="/logo.png" alt="NayePankh Foundation" className="card-header-logo" style={{ height: "64px", marginBottom: "16px" }} />
             <h1 className="card-title">Volunteer Registration</h1>
             <p className="card-subtitle" style={{ marginBottom: "12px", fontWeight: "500" }}>
               Join our mission — Giving Wings to Dreams 🌱

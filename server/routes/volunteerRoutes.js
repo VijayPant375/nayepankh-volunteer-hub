@@ -7,10 +7,12 @@ const {
   getAllVolunteers,
   updateVolunteerStatus,
   exportCSV,
+  getVolunteerCount,
 } = require("../controllers/volunteerController");
 
 // Public
 router.post("/", registerVolunteer);
+router.get("/count", getVolunteerCount);
 
 // Protected — /export must come before /:id to avoid route shadowing
 router.get("/export", protect, exportCSV);
