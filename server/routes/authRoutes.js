@@ -6,8 +6,6 @@ const passport = require("../config/passport");
 const protect = require("../middleware/auth");
 const { googleCallback, logout, getMe } = require("../controllers/authController");
 
-// Initialize passport (no sessions — JWT only)
-router.use(passport.initialize());
 
 // ── Google OAuth flow ─────────────────────────────────────────────────────────
 router.get(

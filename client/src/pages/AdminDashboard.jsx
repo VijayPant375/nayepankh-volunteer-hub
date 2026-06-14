@@ -11,7 +11,6 @@ const AREAS = [
 export default function AdminDashboard() {
   const { admin, logout } = useContext(AuthContext);
   const [volunteers, setVolunteers] = useState([]);
-  const [allVolunteers, setAllVolunteers] = useState([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState("");
@@ -53,13 +52,13 @@ export default function AdminDashboard() {
     }
   }, [statusFilter, areaFilter, debouncedSearch]);
 
-  // Fetch ALL volunteers for global stats
-  const fetchAllVolunteers = useCallback(async () => {
+  // Fetch stats via aggregation endpoint
+  const fetchStats = useCallback(async () => {
     try {
-      const res = await api.get("/api/volunteers");
-      setAllVolunteers(res.data.volunteers || []);
+      const res = await api.get("/api/volunteers/stats");
+      setStats(res.data);
     } catch (error) {
-      console.error("Failed to fetch all volunteers for stats", error);
+      console.error("Failed to fetch volunteer stats", error);
     }
   }, []);
 
@@ -68,26 +67,15 @@ export default function AdminDashboard() {
   }, [fetchVolunteers]);
 
   useEffect(() => {
-    fetchAllVolunteers();
-  }, [fetchAllVolunteers]);
-
-  // Calculate stats from allVolunteers
-  useEffect(() => {
-    const s = { total: allVolunteers.length, pending: 0, approved: 0, rejected: 0 };
-    allVolunteers.forEach(v => {
-      if (v.status === "pending") s.pending++;
-      if (v.status === "approved") s.approved++;
-      if (v.status === "rejected") s.rejected++;
-    });
-    setStats(s);
-  }, [allVolunteers]);
+    fetchStats();
+  }, [fetchStats]);
 
   // Handle status update
   const handleUpdateStatus = async (id, newStatus) => {
     try {
       await api.patch(`/api/volunteers/${id}/status`, { status: newStatus });
       fetchVolunteers(); // refresh table
-      fetchAllVolunteers(); // refresh stats
+      fetchStats(); // refresh stats
     } catch (error) {
       console.error("Failed to update status", error);
       alert("Failed to update status");

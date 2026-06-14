@@ -55,8 +55,10 @@ const getAllVolunteers = async (req, res) => {
       ];
     }
 
-    const volunteers = await Volunteer.find(query).sort({ registeredAt: -1 });
-    const total = volunteers.length;
+    const [volunteers, total] = await Promise.all([
+      Volunteer.find(query).sort({ registeredAt: -1 }),
+      Volunteer.countDocuments(query),
+    ]);
 
     return res.status(200).json({ volunteers, total });
   } catch (error) {
@@ -147,10 +149,36 @@ const getVolunteerCount = async (req, res) => {
   }
 };
 
+// ── GET /stats — Return aggregate counts by status (protected) ───────────────
+const getVolunteerStats = async (req, res) => {
+  try {
+    const results = await Volunteer.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const stats = { total: 0, pending: 0, approved: 0, rejected: 0 };
+    results.forEach(({ _id, count }) => {
+      if (_id in stats) stats[_id] = count;
+      stats.total += count;
+    });
+
+    return res.status(200).json(stats);
+  } catch (error) {
+    console.error("getVolunteerStats error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   registerVolunteer,
   getAllVolunteers,
   updateVolunteerStatus,
   exportCSV,
   getVolunteerCount,
+  getVolunteerStats,
 };

@@ -8,14 +8,16 @@ const {
   updateVolunteerStatus,
   exportCSV,
   getVolunteerCount,
+  getVolunteerStats,
 } = require("../controllers/volunteerController");
 
 // Public
 router.post("/", registerVolunteer);
 router.get("/count", getVolunteerCount);
 
-// Protected — /export must come before /:id to avoid route shadowing
+// Protected — /export and /stats must come before /:id to avoid route shadowing
 router.get("/export", protect, exportCSV);
+router.get("/stats", protect, getVolunteerStats);
 router.get("/", protect, getAllVolunteers);
 router.patch("/:id/status", protect, updateVolunteerStatus);
 
