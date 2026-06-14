@@ -1,10 +1,12 @@
-const transporter = require("../config/mailer");
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
- * Sends a status notification email to a volunteer.
+ * Sends a status notification email to a volunteer via Resend.
  *
  * @param {{ to: string, name: string, status: "approved" | "rejected" }} options
- * @returns {Promise<void>}  Resolves when mail is accepted by the SMTP relay.
+ * @returns {Promise<void>}
  */
 const sendVolunteerEmail = async ({ to, name, status }) => {
   if (!to) return; // guard — skip if email is missing
@@ -15,10 +17,10 @@ const sendVolunteerEmail = async ({ to, name, status }) => {
     ? "Your Volunteer Application – Approved ✅"
     : "Your Volunteer Application – Update";
 
-  const accentColor  = isApproved ? "#10b981" : "#f59e0b";
-  const bannerBg     = isApproved ? "#d1fae5" : "#fef3c7";
-  const bannerColor  = isApproved ? "#065f46" : "#78350f";
-  const bannerLabel  = isApproved ? "Application Approved" : "Application Update";
+  const accentColor = isApproved ? "#10b981" : "#f59e0b";
+  const bannerBg    = isApproved ? "#d1fae5" : "#fef3c7";
+  const bannerColor = isApproved ? "#065f46" : "#78350f";
+  const bannerLabel = isApproved ? "Application Approved" : "Application Update";
 
   const bodyContent = isApproved
     ? `
@@ -111,12 +113,16 @@ const sendVolunteerEmail = async ({ to, name, status }) => {
 </body>
 </html>`;
 
-  await transporter.sendMail({
-    from: `"NayePankh Foundation" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
+  try {
+    await resend.emails.send({
+      from: "NayePankh Foundation <onboarding@resend.dev>",
+      to,
+      subject,
+      html,
+    });
+  } catch (error) {
+    console.error("sendVolunteerEmail error:", error.message);
+  }
 };
 
 module.exports = sendVolunteerEmail;

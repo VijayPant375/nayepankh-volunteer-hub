@@ -96,17 +96,8 @@ const updateVolunteerStatus = async (req, res) => {
     // Send email notification for approved / rejected (not for pending resets)
     let emailSent = false;
     if ((status === "approved" || status === "rejected") && volunteer.email) {
-      try {
-        await sendVolunteerEmail({
-          to:     volunteer.email,
-          name:   volunteer.name,
-          status,
-        });
-        emailSent = true;
-      } catch (mailError) {
-        // Mail failure must never break the status update response
-        console.error("sendVolunteerEmail error:", mailError.message);
-      }
+      await sendVolunteerEmail({ to: volunteer.email, name: volunteer.name, status });
+      emailSent = true;
     }
 
     return res.status(200).json({ message: "Status updated", volunteer, emailSent });
