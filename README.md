@@ -50,7 +50,7 @@ What sets this system apart is its robust administrative security model utilizin
 | Backend | Node.js, Express.js | REST API server |
 | Database | MongoDB Atlas, Mongoose | Data persistence |
 | Auth | Google OAuth 2.0, Passport.js, JWT | Secure admin authentication |
-| Email | Nodemailer | Volunteer notification emails |
+| Email | Resend | Admin notification emails |
 | Deployment | Render | Single-service deployment |
 
 ## Architecture
@@ -101,8 +101,7 @@ GET    /api/auth/logout             — logout
 | `GOOGLE_CALLBACK_URL` | OAuth redirect URI | `http://localhost:5000/api/auth/google/callback` |
 | `ADMIN_EMAIL` | Allowed admin Gmail address | `admin@gmail.com` |
 | `CLIENT_URL` | Frontend URL | `http://localhost:5173` |
-| `EMAIL_USER` | Gmail address used to send notifications | `yourname@gmail.com` |
-| `EMAIL_PASS` | 16-char Gmail App Password (not your account password) | `abcdefghijklmnop` |
+| `RESEND_API_KEY` | Resend API key for sending notifications | `re_123456789...` |
 
 ## Project Structure
 ```text
