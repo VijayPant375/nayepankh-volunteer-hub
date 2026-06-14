@@ -1,5 +1,6 @@
 const { stringify } = require("csv-stringify");
 const Volunteer = require("../models/Volunteer");
+const sendVolunteerEmail = require("../utils/sendVolunteerEmail");
 
 // ── POST / — Register a new volunteer (public) ────────────────────────────────
 const registerVolunteer = async (req, res) => {
@@ -34,7 +35,7 @@ const registerVolunteer = async (req, res) => {
   }
 };
 
-// ── GET / — Get all volunteers with optional filters (protected) ──────────────
+// ── GET / — Get all volunteers with optional filters + pagination (protected) ──
 const getAllVolunteers = async (req, res) => {
   try {
     const { status, areaOfInterest, search } = req.query;
@@ -55,12 +56,18 @@ const getAllVolunteers = async (req, res) => {
       ];
     }
 
+    const page  = Math.max(1, parseInt(req.query.page,  10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 10));
+    const skip  = (page - 1) * limit;
+
     const [volunteers, total] = await Promise.all([
-      Volunteer.find(query).sort({ registeredAt: -1 }),
+      Volunteer.find(query).sort({ registeredAt: -1 }).skip(skip).limit(limit),
       Volunteer.countDocuments(query),
     ]);
 
-    return res.status(200).json({ volunteers, total });
+    const totalPages = Math.ceil(total / limit);
+
+    return res.status(200).json({ volunteers, total, page, totalPages });
   } catch (error) {
     console.error("getAllVolunteers error:", error);
     return res.status(500).json({ message: "Server error" });
@@ -86,7 +93,23 @@ const updateVolunteerStatus = async (req, res) => {
     volunteer.status = status;
     await volunteer.save();
 
-    return res.status(200).json({ message: "Status updated", volunteer });
+    // Send email notification for approved / rejected (not for pending resets)
+    let emailSent = false;
+    if ((status === "approved" || status === "rejected") && volunteer.email) {
+      try {
+        await sendVolunteerEmail({
+          to:     volunteer.email,
+          name:   volunteer.name,
+          status,
+        });
+        emailSent = true;
+      } catch (mailError) {
+        // Mail failure must never break the status update response
+        console.error("sendVolunteerEmail error:", mailError.message);
+      }
+    }
+
+    return res.status(200).json({ message: "Status updated", volunteer, emailSent });
   } catch (error) {
     console.error("updateVolunteerStatus error:", error);
     return res.status(500).json({ message: "Server error" });
@@ -174,6 +197,21 @@ const getVolunteerStats = async (req, res) => {
   }
 };
 
+// ── DELETE /:id — Delete a volunteer record (protected) ─────────────────────
+const deleteVolunteer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const volunteer = await Volunteer.findByIdAndDelete(id);
+    if (!volunteer) {
+      return res.status(404).json({ message: "Volunteer not found" });
+    }
+    return res.status(200).json({ message: "Volunteer deleted" });
+  } catch (error) {
+    console.error("deleteVolunteer error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   registerVolunteer,
   getAllVolunteers,
@@ -181,4 +219,5 @@ module.exports = {
   exportCSV,
   getVolunteerCount,
   getVolunteerStats,
+  deleteVolunteer,
 };

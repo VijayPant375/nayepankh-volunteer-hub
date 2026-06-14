@@ -32,11 +32,14 @@ What sets this system apart is its robust administrative security model utilizin
 
 ### For Admins (Protected):
 - Google OAuth login
-- Stats dashboard
+- Stats dashboard (live aggregate counts via MongoDB pipeline)
 - Search and filters
-- Approve/reject/reset applicant statuses
+- Approve / reject / reset applicant statuses
+- **Email notifications** sent automatically to volunteers on approval or rejection
+- Paginated volunteer table (10 per page, resets on filter change)
 - CSV export
 - Skeleton loading states
+- In-page delete confirmation modal
 
 ## Tech Stack
 
@@ -47,6 +50,7 @@ What sets this system apart is its robust administrative security model utilizin
 | Backend | Node.js, Express.js | REST API server |
 | Database | MongoDB Atlas, Mongoose | Data persistence |
 | Auth | Google OAuth 2.0, Passport.js, JWT | Secure admin authentication |
+| Email | Nodemailer | Volunteer notification emails |
 | Deployment | Render | Single-service deployment |
 
 ## Architecture
@@ -62,8 +66,10 @@ GET  /api/volunteers/count   — get total volunteer count
 
 **Protected (admin JWT cookie required):**
 ```text
-GET    /api/volunteers              — get all volunteers (filterable)
-PATCH  /api/volunteers/:id/status   — update status
+GET    /api/volunteers              — get all volunteers (filterable, paginated)
+GET    /api/volunteers/stats        — get aggregate counts (total, pending, approved, rejected)
+PATCH  /api/volunteers/:id/status   — update status (sends email for approved/rejected)
+DELETE /api/volunteers/:id          — permanently delete a volunteer record
 GET    /api/volunteers/export       — download CSV
 GET    /api/auth/google             — initiate Google OAuth
 GET    /api/auth/google/callback    — OAuth callback
@@ -95,6 +101,8 @@ GET    /api/auth/logout             — logout
 | `GOOGLE_CALLBACK_URL` | OAuth redirect URI | `http://localhost:5000/api/auth/google/callback` |
 | `ADMIN_EMAIL` | Allowed admin Gmail address | `admin@gmail.com` |
 | `CLIENT_URL` | Frontend URL | `http://localhost:5173` |
+| `EMAIL_USER` | Gmail address used to send notifications | `yourname@gmail.com` |
+| `EMAIL_PASS` | 16-char Gmail App Password (not your account password) | `abcdefghijklmnop` |
 
 ## Project Structure
 ```text
@@ -117,11 +125,9 @@ nayepankh-volunteer-hub/
 ```
 
 ## What I'd Add Next
-- Email notifications to volunteers on approval/rejection
 - Volunteer login portal to track application status
 - Analytics charts (registrations over time, area distribution)
 - Bulk approve/reject actions
-- Pagination for large volunteer lists
 
 <div align="center">
   <p>Built with ❤️ by <a href="https://github.com/VijayPant375">VijayPant375</a></p>

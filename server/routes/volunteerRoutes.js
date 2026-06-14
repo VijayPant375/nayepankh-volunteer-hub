@@ -9,6 +9,7 @@ const {
   exportCSV,
   getVolunteerCount,
   getVolunteerStats,
+  deleteVolunteer,
 } = require("../controllers/volunteerController");
 
 // Public
@@ -20,5 +21,6 @@ router.get("/export", protect, exportCSV);
 router.get("/stats", protect, getVolunteerStats);
 router.get("/", protect, getAllVolunteers);
 router.patch("/:id/status", protect, updateVolunteerStatus);
+router.delete("/:id", protect, deleteVolunteer);
 
 module.exports = router;

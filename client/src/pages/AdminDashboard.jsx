@@ -14,6 +14,11 @@ export default function AdminDashboard() {
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState("");
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const PAGE_SIZE = 10;
   
   // Filter state
   const [statusFilter, setStatusFilter] = useState("");
@@ -24,11 +29,26 @@ export default function AdminDashboard() {
   // Stats
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
 
+  // Toast notification
+  const [toast, setToast] = useState(null); // { message, type: 'success'|'info' }
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  // Delete confirmation modal
+  const [deleteTarget, setDeleteTarget] = useState(null); // { id, name } | null
+
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchInput), 400);
     return () => clearTimeout(timer);
   }, [searchInput]);
+
+  // Reset to page 1 whenever a filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, areaFilter, debouncedSearch]);
 
   // Fetch filtered volunteers for the table
   const fetchVolunteers = useCallback(async () => {
@@ -38,11 +58,14 @@ export default function AdminDashboard() {
       if (statusFilter) params.append("status", statusFilter);
       if (areaFilter) params.append("areaOfInterest", areaFilter);
       if (debouncedSearch) params.append("search", debouncedSearch);
+      params.append("page", currentPage);
+      params.append("limit", PAGE_SIZE);
 
       const res = await api.get(`/api/volunteers?${params.toString()}`);
       setVolunteers(res.data.volunteers);
       setTotal(res.data.total);
-      
+      setTotalPages(res.data.totalPages ?? 1);
+
       const now = new Date();
       setLastUpdated(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
     } catch (error) {
@@ -50,7 +73,7 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter, areaFilter, debouncedSearch]);
+  }, [statusFilter, areaFilter, debouncedSearch, currentPage]);
 
   // Fetch stats via aggregation endpoint
   const fetchStats = useCallback(async () => {
@@ -73,12 +96,39 @@ export default function AdminDashboard() {
   // Handle status update
   const handleUpdateStatus = async (id, newStatus) => {
     try {
-      await api.patch(`/api/volunteers/${id}/status`, { status: newStatus });
+      const res = await api.patch(`/api/volunteers/${id}/status`, { status: newStatus });
       fetchVolunteers(); // refresh table
       fetchStats(); // refresh stats
+
+      if (newStatus === "approved" || newStatus === "rejected") {
+        const emailNote = res.data.emailSent ? " · Email notification sent ✉️" : "";
+        showToast(`Status updated to ${newStatus}${emailNote}`, "success");
+      } else {
+        showToast("Status reset to pending", "info");
+      }
     } catch (error) {
       console.error("Failed to update status", error);
-      alert("Failed to update status");
+      showToast("Failed to update status", "error");
+    }
+  };
+
+  // Handle delete — opens confirmation modal
+  const handleDelete = (id, name) => {
+    setDeleteTarget({ id, name });
+  };
+
+  // Confirmed delete — fires after user clicks "Delete" in the modal
+  const confirmDelete = async () => {
+    const { id, name } = deleteTarget;
+    setDeleteTarget(null);
+    try {
+      await api.delete(`/api/volunteers/${id}`);
+      fetchVolunteers();
+      fetchStats();
+      showToast(`${name}'s application deleted`, "info");
+    } catch (error) {
+      console.error("Failed to delete volunteer", error);
+      showToast("Failed to delete application", "error");
     }
   };
 
@@ -109,6 +159,40 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
+      {/* TOAST */}
+      {toast && (
+        <div className={`toast toast-${toast.type}`} role="status">
+          {toast.message}
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {deleteTarget && (
+        <div className="modal-overlay" onClick={() => setDeleteTarget(null)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-icon">⚠️</div>
+            <h2 className="modal-title">Delete Application?</h2>
+            <p className="modal-body">
+              You are about to permanently delete the application from{" "}
+              <strong>{deleteTarget.name}</strong>. This action cannot be undone.
+            </p>
+            <div className="modal-actions">
+              <button
+                className="modal-btn modal-btn-cancel"
+                onClick={() => setDeleteTarget(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn modal-btn-delete"
+                onClick={confirmDelete}
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* HEADER BAR */}
       <header className="dashboard-header">
         <div className="header-left">
@@ -247,6 +331,14 @@ export default function AdminDashboard() {
                           Reset
                         </button>
                       )}
+                      <span className="action-divider" aria-hidden="true" />
+                      <button
+                        className="btn-action btn-delete"
+                        title="Delete application"
+                        onClick={() => handleDelete(v._id, v.name)}
+                      >
+                        🗑️
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -254,6 +346,30 @@ export default function AdminDashboard() {
             </tbody>
           </table>
         </div>
+
+        {/* PAGINATION */}
+        {totalPages > 1 && (
+          <div className="pagination-row">
+            <button
+              className="btn-page"
+              onClick={() => setCurrentPage(p => p - 1)}
+              disabled={currentPage === 1 || isLoading}
+            >
+              ← Previous
+            </button>
+            <span className="page-info">
+              Page {currentPage} of {totalPages}
+              <span className="page-total"> &nbsp;({total} results)</span>
+            </span>
+            <button
+              className="btn-page"
+              onClick={() => setCurrentPage(p => p + 1)}
+              disabled={currentPage === totalPages || isLoading}
+            >
+              Next →
+            </button>
+          </div>
+        )}
       </main>
 
       <footer style={{ textAlign: "center", padding: "24px", color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "20px" }}>
