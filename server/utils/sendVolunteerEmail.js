@@ -1,9 +1,17 @@
-const { Resend } = require("resend");
+const nodemailer = require("nodemailer");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: 'smtp-relay.brevo.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_SMTP_USER,
+    pass: process.env.BREVO_SMTP_PASS,
+  },
+});
 
 /**
- * Sends a status notification email to a volunteer via Resend.
+ * Sends a status notification email to a volunteer.
  *
  * @param {{ to: string, name: string, status: "approved" | "rejected" }} options
  * @returns {Promise<void>}
@@ -114,7 +122,7 @@ const sendVolunteerEmail = async ({ to, name, status }) => {
 </html>`;
 
   try {
-    await resend.emails.send({
+    await transporter.sendMail({
       from: "NayePankh Foundation <onboarding@resend.dev>",
       to,
       subject,
