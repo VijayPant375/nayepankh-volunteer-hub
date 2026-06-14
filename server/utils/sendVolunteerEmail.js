@@ -1,17 +1,9 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_SMTP_USER,
-    pass: process.env.BREVO_SMTP_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
- * Sends a status notification email to a volunteer.
+ * Sends a status notification email to the admin.
  *
  * @param {{ to: string, name: string, status: "approved" | "rejected" }} options
  * @returns {Promise<void>}
@@ -21,37 +13,16 @@ const sendVolunteerEmail = async ({ to, name, status }) => {
 
   const isApproved = status === "approved";
 
-  const subject = isApproved
-    ? "Your Volunteer Application – Approved ✅"
-    : "Your Volunteer Application – Update";
+  const subject = `Volunteer ${name} (${to}) has been ${status}`;
 
   const accentColor = isApproved ? "#10b981" : "#f59e0b";
   const bannerBg    = isApproved ? "#d1fae5" : "#fef3c7";
   const bannerColor = isApproved ? "#065f46" : "#78350f";
   const bannerLabel = isApproved ? "Application Approved" : "Application Update";
 
-  const bodyContent = isApproved
-    ? `
-      <p style="margin:0 0 16px">We are thrilled to welcome you to the <strong>NayePankh Foundation</strong> volunteer family! Your application has been reviewed and <strong>approved</strong>.</p>
-      <p style="margin:0 0 16px">Here's what happens next:</p>
-      <ul style="margin:0 0 16px;padding-left:20px;line-height:1.8">
-        <li>Our team will reach out to you shortly with your first assignment details.</li>
-        <li>Please keep an eye on this inbox for onboarding information.</li>
-        <li>Feel free to reply to this email if you have any questions.</li>
-      </ul>
-      <p style="margin:0 0 16px">Together, we can make a difference. Thank you for choosing to give back! 🌱</p>
-    `
-    : `
-      <p style="margin:0 0 16px">Thank you for your interest in volunteering with the <strong>NayePankh Foundation</strong>. After careful review, we are unable to move forward with your application at this time.</p>
-      <p style="margin:0 0 16px">This decision does not reflect on your enthusiasm or commitment — we receive many applications and sometimes the fit isn't quite right for our current needs.</p>
-      <p style="margin:0 0 16px">We warmly encourage you to:</p>
-      <ul style="margin:0 0 16px;padding-left:20px;line-height:1.8">
-        <li>Revisit our volunteer page in the future — new opportunities open regularly.</li>
-        <li>Stay connected with our community on social media.</li>
-        <li>Reapply whenever you feel ready — we'd love to hear from you again.</li>
-      </ul>
-      <p style="margin:0 0 16px">Thank you again for your willingness to contribute. Every act of goodwill matters. 🙏</p>
-    `;
+  const bodyContent = `
+      <p style="margin:0 0 16px">Volunteer <strong>${name}</strong> (<strong>${to}</strong>) has been <strong>${status}</strong>.</p>
+  `;
 
   const html = `
 <!DOCTYPE html>
@@ -88,7 +59,7 @@ const sendVolunteerEmail = async ({ to, name, status }) => {
           <tr>
             <td style="padding:32px 32px 24px">
               <p style="margin:0 0 16px;font-size:1rem;color:#1a1a1a">
-                Dear <strong>${name}</strong>,
+                Dear Admin,
               </p>
               <div style="font-size:0.95rem;color:#374151;line-height:1.7">
                 ${bodyContent}
@@ -122,9 +93,9 @@ const sendVolunteerEmail = async ({ to, name, status }) => {
 </html>`;
 
   try {
-    await transporter.sendMail({
+    await resend.emails.send({
       from: "NayePankh Foundation <onboarding@resend.dev>",
-      to,
+      to: process.env.ADMIN_EMAIL,
       subject,
       html,
     });
